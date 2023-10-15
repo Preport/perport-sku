@@ -1,0 +1,34 @@
+{
+  "name": "@perport/sku",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "publishConfig": {
+    "registry": "https://npmreg.perport.net",
+    "access": "restricted"
+  },
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "type": "commonjs",
+  "author": "perport",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.3",
+    "@types/steam-tradeoffer-manager": "^2.10.4",
+    "dotenv": "^16.3.1",
+    "prettier": "^3.0.0",
+    "steam-tradeoffer-manager": "^2.10.6",
+    "steamcommunity": "^3.46.1",
+    "ts-jest": "^29.1.1"
+  },
+  "optionalDependencies": {
+    "@types/steamcommunity": "^3.x"
+  },
+  "dependencies": {
+    "@keyv/offline": "^3.0.7",
+    "got": "^13.0.0",
+    "keyv": "^4.5.4",
+    "tf2-static-schema": "^1.54.0"
+  }
+}
