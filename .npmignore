@@ -1,0 +1,13 @@
+# formatters
+.eslintrc.js
+.prettierrc.js
+.gitattributes
+# source
+src
+tsconfig.json
+
+# temporary files
+tmp
+
+#github files
+.github
