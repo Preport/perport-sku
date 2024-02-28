@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "jest --coverage",
+    "build": "tsc",
     "inventory": "ts-node ./scripts/fetchInventory.ts"
   },
   "type": "commonjs",
