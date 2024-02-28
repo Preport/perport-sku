@@ -1,4 +1,4 @@
-import { Schema } from './schema/schema';
+import { Schema } from './schema';
 
 export class Sku {
   defindex: number = 0;
