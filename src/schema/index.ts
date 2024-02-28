@@ -33,7 +33,6 @@ export class Schema {
 
   upgradables: Map<string, number> = new Map();
   items: Record<number, MinifiedAttributes> = {};
-  //TODO: Populate this
   readonly defindexMap = new Map<number, number>();
   readonly normalizedStrangePartMap = new Map<number, number>();
   constructor(apiKey: string) {
@@ -133,9 +132,6 @@ export class Schema {
     for (const [id, name] of schemaOverview.parts.entries() as IterableIterator<[number, string]>) {
       this.parts.has(id) && this.parts.set(name, id);
     }
-
-    //TODO: Remove this
-    console.log(this.cosmeticParts, this.parts, this.upgradables);
 
     const seen: { [partName: string]: number } = {};
     let first: number;
