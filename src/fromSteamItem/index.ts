@@ -1,6 +1,6 @@
 import type CEconItem from 'steamcommunity/classes/CEconItem';
 import { Sku } from '../skuObject';
-import { Schema } from '../schema/schema';
+import { Schema } from '../schema';
 import { parseItemName } from './parseItemName';
 import { parseDescriptions } from './parseDescriptions';
 import { parseAttributes } from './parseAttributes';
@@ -12,26 +12,52 @@ export function fromSteamItem(item: CEconItem, schema: Schema) {
   if (item.appid !== 440) throw new Error('Can not convert a non TF2 item to sku!');
 
   const defindex = getDefindex(item);
-  const qualityTag = item.tags?.find(tag => tag.category === 'Quality');
+  const qualityTag = item.tags?.find(tag => tag.category === 'Quality') as QualityTagType | undefined;
 
-  const quality: number | undefined = qualityTag ? +schema.qualities![qualityTag.name] : undefined;
+  const quality: number | undefined = qualityTag ? schema.qualities.get(qualityTag.name) : undefined;
   if (quality === undefined) throw new Error("Couldn't get the quality");
 
-  const attrs = schema.itemsGame.items[defindex];
+  const attrs = schema.items[defindex];
 
   if (!attrs) throw new Error("Couldn't get the sku's attrs");
 
   const attributes = parseAttributes(attrs);
 
-  return new Sku({
+  const isCosmetic = item.tags.some(
+    tag => tag.category === 'Type' && (tag.name === 'Cosmetic' || tag.name === 'Usable Item')
+  );
+  const beforeItemNameParsed = {
     defindex,
     quality,
     normalized: false,
 
     ...attributes,
-    ...parseItemName(item, !!attributes.crateseries),
-    ...parseDescriptions(item, schema, quality)
-  });
+    ...parseDescriptions(
+      item,
+      schema,
+      quality,
+      isCosmetic,
+      attributes.crateseries !== undefined,
+      attributes.strangeParts
+    )
+  };
+  //TODO:REMOVE ME
+  if (beforeItemNameParsed.target === 0) {
+    console.log(defindex);
+  }
+  return new Sku(
+    Object.assign(
+      beforeItemNameParsed,
+      parseItemName(
+        item,
+        !!attributes.crateseries,
+        beforeItemNameParsed.quality,
+        qualityTag!.name,
+        beforeItemNameParsed.killstreak,
+        beforeItemNameParsed.quality2
+      )
+    )
+  );
 }
 
 function getDefindex(item: CEconItem) {
@@ -45,3 +71,11 @@ function getDefindex(item: CEconItem) {
 
   return defindex;
 }
+
+export type QualityTagType = {
+  internal_name: string;
+  name: string;
+  category: string;
+  color: string;
+  category_name: string;
+};

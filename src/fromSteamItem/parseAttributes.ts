@@ -1,22 +1,37 @@
+import type { MinifiedAttributes } from '../schema/builders/getItemsGame';
 import type { SkuType } from '../skuObject';
 
-type AttributeType = {
-  static_attrs: Record<string, `${number}`>;
-  attributes: Record<string, Record<string, any>>;
-};
 export function parseAttributes(
-  attributes: AttributeType
-): Pick<SkuType, 'crateseries' | 'target' | 'output' | 'outputQuality'> {
+  attributes: MinifiedAttributes
+): Pick<SkuType, 'crateseries' | 'target' | 'paint' | 'strangeParts'> {
+  const static_attrs = attributes.static_attrs;
   const sku: {
     crateseries?: number;
     target?: number;
+    paint?: number;
+    strangeParts?: number[];
   } = {
-    crateseries: +attributes.static_attrs?.['set supply crate series'] || undefined
+    crateseries: +static_attrs?.['set supply crate series'] || undefined
   };
 
   const target = +attributes.attributes?.['tool target item'] || undefined;
 
-  if (target) sku.target = target;
+  if (target) {
+    sku.target = target;
+    console.log('TargetAttr', attributes.attributes, target);
+  }
+
+  // Paint cans
+  const paint = +attributes.attributes?.['set item tint RGB']?.value || undefined;
+  if (paint) sku.paint = paint;
+
+  let strangePartID = 0;
+  for (let i = 1; i < 4; i++) {
+    if ((strangePartID = +static_attrs?.[`kill eater user score type ${i}`])) {
+      sku.strangeParts ??= [];
+      sku.strangeParts.push(strangePartID);
+    } else break;
+  }
 
   return sku;
 }
