@@ -16,10 +16,7 @@ export function parseAttributes(
 
   const target = +attributes.attributes?.['tool target item'] || undefined;
 
-  if (target) {
-    sku.target = target;
-    console.log('TargetAttr', attributes.attributes, target);
-  }
+  if (target) sku.target = target;
 
   // Paint cans
   const paint = +attributes.attributes?.['set item tint RGB']?.value || undefined;

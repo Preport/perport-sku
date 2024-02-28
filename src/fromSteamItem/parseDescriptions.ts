@@ -47,10 +47,7 @@ export function parseDescriptions(
   };
 
   const targetDefindex = target(item.descriptions, schema);
-  if (targetDefindex !== undefined) {
-    skObj.target = targetDefindex;
-    console.log('Target', targetDefindex);
-  }
+  if (targetDefindex !== undefined) skObj.target = targetDefindex;
 
   const paintId = paint(item.descriptions, schema);
   if (paintId !== undefined) skObj.paint = paintId;
