@@ -11,7 +11,6 @@ on:
   workflow_dispatch:
 
 jobs:
-
   publish-npm:
     runs-on: ubuntu-latest
     steps:
@@ -21,10 +20,10 @@ jobs:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
+      - run: npm test
       - run: npm run build
       - uses: JS-DevTools/npm-publish@v2
         id: publish
         with:
           strategy: all
           token: ${{ secrets.NPM_TOKEN }}
-          registry: "https://npmreg.perport.net" 
