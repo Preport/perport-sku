@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "got": "^11.8.6",
-    "tf2-static-schema": "^1.54.0",
     "vdf-parser": "^1.2.1"
   }
 }
