@@ -1,9 +1,14 @@
 import got from 'got';
-import Keyv from 'keyv';
-import { TwoWayMap } from '../schema';
+import { TwoWayMap } from '..';
+import { SpellMap } from '../mapExtensions';
 
 export async function getSchemaItems(apiKey: string) {
   const items = new Map() as TwoWayMap;
+  const upgradables = new Map<string, number>();
+  const spells = new SpellMap();
+
+  const parts = new Map() as TwoWayMap;
+  const cosmeticParts = new Map() as TwoWayMap;
   let resp: Result | undefined;
   do {
     resp = (
@@ -13,11 +18,17 @@ export async function getSchemaItems(apiKey: string) {
             resp?.next || 0
           }`,
           {
-            cache: new Keyv('offline://./tmp/caches')
+            //cache is broken for this endpoint
+            //cache: FsCache.get()
           }
         )
-        .json()) as GetSchemaItemsResponse
+        .json()
+        .catch(err => {
+          console.log(err, Buffer.from(err.response.body).toString('utf8'), err.response?.isFromCache);
+          throw err;
+        })) as GetSchemaItemsResponse
     ).result;
+
     for (const item of resp.items) {
       const name: string =
         item.item_name === 'Kit'
@@ -30,12 +41,40 @@ export async function getSchemaItems(apiKey: string) {
 
       items.set(item.defindex, name);
       !items.has(name) && items.set(name, item.defindex);
+
+      // Upgradable items
+      if (item.name.startsWith('Upgradeable ')) {
+        upgradables.set(item.item_name, item.defindex);
+      }
+
+      // strange parts
+      if (item.item_type_name === 'Strange Part') {
+        const counterID = getCounterID(item.attributes);
+        if (counterID === undefined) continue;
+        const itemName = name.substring(name.indexOf(':') + 2);
+        const itemBaseName = item.name.substring(item.name.indexOf(':') + 2);
+        const map = name.startsWith('Strange Cosmetic Part: ') ? cosmeticParts : parts;
+
+        map.set(counterID, itemName);
+        !map.has(itemName) && map.set(itemName, counterID);
+        !map.has(itemBaseName) && map.set(itemBaseName, counterID);
+        continue;
+      }
+      // spells
+      if (!name.startsWith('Halloween Spell: ')) continue;
+
+      const descStr = name.substring(17);
+      spells.setSpell(descStr, item.defindex);
     }
+    await new Promise(resolve => setTimeout(resolve, 200));
   } while (resp.next !== undefined);
 
-  return items;
+  return { items, spells, cosmeticParts, parts, upgradables };
 }
 
+function getCounterID(attribs: Attribute[] | undefined) {
+  return attribs?.find(attrib => attrib.class === 'strange_part_new_counter_id')?.value;
+}
 export interface GetSchemaItemsResponse {
   result: Result;
 }

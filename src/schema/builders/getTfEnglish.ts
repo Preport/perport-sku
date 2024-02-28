@@ -1,12 +1,12 @@
 import got from 'got';
-import Keyv from 'keyv';
-import type { TwoWayMap } from '../schema';
+import type { TwoWayMap } from '..';
+import { FsCache } from '../fsCache';
 
 export async function getTfEnglish() {
   const resp = await got.get(
     'https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/tf/resource/tf_english.txt',
     {
-      cache: new Keyv('offline://./tmp/caches')
+      cache: FsCache.get()
     }
   );
 
@@ -24,8 +24,8 @@ export async function getTfEnglish() {
     killstreakers.set(match[2], +match[1]);
   }
   while ((match = sheenRegex.exec(resp.body))) {
-    killstreakers.set(+match[1], match[2]);
-    killstreakers.set(match[2], +match[1]);
+    sheens.set(+match[1], match[2]);
+    sheens.set(match[2], +match[1]);
   }
 
   return { killstreakers, sheens };

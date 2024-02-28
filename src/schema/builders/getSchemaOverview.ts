@@ -1,12 +1,12 @@
 import got from 'got';
-import Keyv from 'keyv';
-import type { TwoWayMap } from '../schema';
+import type { TwoWayMap } from '..';
+import { FsCache } from '../fsCache';
 
 export async function getSchemaOverview(apiKey: string) {
   const resp = (
     (await got
       .get(`https://api.steampowered.com/IEconItems_440/GetSchemaOverview/v0001?key=${apiKey}&language=English`, {
-        cache: new Keyv('offline://./tmp/caches')
+        cache: FsCache.get()
       })
       .json()) as GetSchemaResponse
   ).result;
@@ -21,6 +21,9 @@ export async function getSchemaOverview(apiKey: string) {
 
   const effects = new Map() as TwoWayMap;
 
+  //ADD invalid particle
+  effects.set(0, 'Invalid Particle');
+  effects.set('Invalid Particle', 0);
   for (const particle of resp.attribute_controlled_attached_particles) {
     effects.set(particle.id, particle.name);
     !effects.has(particle.name) && effects.set(particle.name, particle.id);
@@ -51,9 +54,10 @@ export async function getSchemaOverview(apiKey: string) {
 
   const parts = new Map() as TwoWayMap;
   for (const part of resp.kill_eater_score_types) {
-    parts.set(part.type, part.type_name);
+    const name = part.type_name;
+    parts.set(part.type, name);
     // reverse lookup fcfs
-    !parts.has(part.type_name) && parts.set(part.type_name, part.type);
+    //!parts.has(name) && parts.set(name, part.type);
   }
 
   const stringLookups: { [name: string]: StringLookupString[] } = {};
