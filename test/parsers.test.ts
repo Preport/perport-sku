@@ -1,5 +1,5 @@
-import { Schema } from '../src/schema/schema';
-import { mkdir, readFile, writeFile } from 'fs/promises';
+import { Schema } from '../src/schema';
+import { readFile } from 'fs/promises';
 import { fromAttributes } from '../src/fromAttributes';
 import { fromSteamItem } from '../src/fromSteamItem';
 
@@ -22,45 +22,54 @@ function addItem(parser: string, assetid: number, sku: string): string {
 }
 describe('Parse inventories', () => {
   it("Should parse Hack The Gibson's inventory from steam-api", async () => {
-    const inv = JSON.parse(await readFile(__dirname + '/testItems.json', 'utf8'));
+    const inv = await readSteamInventory('gibson');
 
-    const mapped = inv.map(item =>
-      addItem('steam', item.assetid, fromSteamItem(item, schema).normalize(schema).toString())
-    );
-    //console.log(mapped);
-    await mkdir('./tmp', { recursive: true });
-    await saveJSON('gibson-steamapi-end', mapped);
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).normalize(schema).toString()));
   }, 30_000);
 
   it("Should parse Hack The Gibson's inventory from tf2-api", async () => {
-    const attribs = JSON.parse(await readFile(__dirname + '/testAttributes.json', 'utf8')).result.items;
+    const attribs = await readAttributes('gibson');
 
-    const mapped = attribs.map(item =>
-      addItem('tf2', item.id, fromAttributes(item, schema).normalize(schema).toString())
-    );
-    //console.log(mapped);
-    await mkdir('./tmp', { recursive: true });
-    await saveJSON('gibson-attributes-end', mapped);
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).normalize(schema).toString()));
+  }, 30_000);
+
+  it("Should parse Oli's inventory from steam-api", async () => {
+    const inv = await readSteamInventory('oli');
+
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).normalize(schema).toString()));
+  }, 30_000);
+
+  it("Should parse Oli's inventory from tf2-api", async () => {
+    const attribs = await readAttributes('oli');
+
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).normalize(schema).toString()));
   }, 30_000);
 
   afterAll(() => {
+    const skipped: string[] = [
+      '13271895045' // has 2 invis parts on tf2 attribs and none on steam
+    ];
+    let errString = '';
     for (const assetid in items) {
       const values = Object.values(items[assetid]);
-      expect(() => {
-        if (!values.every(value => value === values[0])) {
-          throw new Error(
-            `Not all parsers returned the same sku for id(${assetid}). Object: ${JSON.stringify(
-              items[assetid],
-              undefined,
-              '\t'
-            )}`
-          );
-        }
-      }).not.toThrowError();
+
+      if (!values.every(value => value === values[0]) && !skipped.includes(assetid)) {
+        errString += `Not all parsers returned the same sku for id(${assetid}). Object: ${JSON.stringify(
+          items[assetid],
+          undefined,
+          '\t'
+        )}`;
+      }
     }
+    expect(errString).toBe('');
   });
 });
 
-function saveJSON(name: string, file: any) {
-  return writeFile(`./tmp/${name}.json`, JSON.stringify(file, undefined, '\t'));
+type names = 'gibson' | 'oli';
+async function readAttributes(name: names) {
+  return JSON.parse(await readFile(`${__dirname}/inventories/${name}_attributes.json`, 'utf8')).items;
+}
+
+async function readSteamInventory(name: names) {
+  return JSON.parse(await readFile(`${__dirname}/inventories/${name}_steam.json`, 'utf8'));
 }
