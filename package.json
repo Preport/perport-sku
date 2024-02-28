@@ -1,12 +1,8 @@
 {
   "name": "@perport/sku",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
-  "publishConfig": {
-    "registry": "https://npmreg.perport.net",
-    "access": "restricted"
-  },
   "scripts": {
     "test": "jest --coverage",
     "build": "tsc",
