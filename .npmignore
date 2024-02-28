@@ -1,6 +1,6 @@
 # formatters
 .eslintrc.js
-.prettierrc.js
+.prettierrc
 .gitattributes
 # source
 src
@@ -9,5 +9,13 @@ tsconfig.json
 # temporary files
 tmp
 
-#github files
+# github files
 .github
+
+# development folders
+scripts
+coverage
+test
+
+# environment files
+.env
