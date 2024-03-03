@@ -19,3 +19,6 @@ test
 
 # environment files
 .env
+
+# Not required type files
+dist/schema/builders/*.d.ts
