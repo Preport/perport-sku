@@ -41,10 +41,6 @@ export function fromSteamItem(item: CEconItem, schema: Schema) {
       attributes.strangeParts
     )
   };
-  //TODO:REMOVE ME
-  if (beforeItemNameParsed.target === 0) {
-    console.log(defindex);
-  }
   return new Sku(
     Object.assign(
       beforeItemNameParsed,
