@@ -24,25 +24,25 @@ describe('Parse inventories', () => {
   it("Should parse Hack The Gibson's inventory from steam-api", async () => {
     const inv = await readSteamInventory('gibson');
 
-    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).normalize(schema).toString()));
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).toString()));
   }, 30_000);
 
   it("Should parse Hack The Gibson's inventory from tf2-api", async () => {
     const attribs = await readAttributes('gibson');
 
-    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).normalize(schema).toString()));
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
   }, 30_000);
 
   it("Should parse Oli's inventory from steam-api", async () => {
     const inv = await readSteamInventory('oli');
 
-    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).normalize(schema).toString()));
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).toString()));
   }, 30_000);
 
   it("Should parse Oli's inventory from tf2-api", async () => {
     const attribs = await readAttributes('oli');
 
-    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).normalize(schema).toString()));
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
   }, 30_000);
 
   afterAll(() => {

@@ -1,5 +1,3 @@
-import { Schema } from './schema';
-
 export class Sku {
   defindex: number = 0;
   quality: number = 0;
@@ -128,19 +126,6 @@ export class Sku {
     }
   }
 
-  /**
-   * Modifies the sku object if not normalized, does nothing if normalized is set to **true**!
-   */
-  normalize(schema: Schema) {
-    if (this.normalized) return this;
-    // should normalize defindex, strangeParts
-    for (let i = 0; i < (this.strangeParts?.length || 0); i++) {
-      this.strangeParts![i] = schema.normalizedStrangePartMap.get(this.strangeParts![i]) ?? this.strangeParts![i];
-    }
-    this.strangeParts?.sort((a, b) => a - b);
-    this.normalized = true;
-    return this;
-  }
   /**
    * @param weak if set to `true` will not add paint and spells to the sku
    */
