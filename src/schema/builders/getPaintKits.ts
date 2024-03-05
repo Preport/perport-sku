@@ -16,7 +16,7 @@ export async function getPaintKits() {
   while ((match = paintKitRegex.exec(resp.body))) {
     if (match[2].startsWith(`${match[1]}:`)) continue;
     paintKits.set(+match[1], match[2]);
-    paintKits.set(match[2], +match[1]);
+    !paintKits.has(match[2]) && paintKits.set(match[2], +match[1]);
   }
   return paintKits;
 }
