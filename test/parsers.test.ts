@@ -45,6 +45,20 @@ describe('Parse inventories', () => {
     attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
   }, 30_000);
 
+  it("Should parse Frost's inventory from steam-api", async () => {
+    const inv = await readSteamInventory('frost');
+
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).toString()));
+  }, 30_000);
+
+  it("Should parse Frost's inventory from tf2-api", async () => {
+    const attribs = await readAttributes('frost');
+
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
+  }, 30_000);
+
+  //#script Insert above me
+
   afterAll(() => {
     const skipped: string[] = [
       '13271895045' // has 2 invis parts on tf2 attribs and none on steam
@@ -65,7 +79,7 @@ describe('Parse inventories', () => {
   });
 });
 
-type names = 'gibson' | 'oli';
+type names = 'gibson' | 'oli' | 'frost';
 async function readAttributes(name: names) {
   return JSON.parse(await readFile(`${__dirname}/inventories/${name}_attributes.json`, 'utf8')).items;
 }
