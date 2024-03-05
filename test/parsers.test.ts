@@ -57,7 +57,31 @@ describe('Parse inventories', () => {
     attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
   }, 30_000);
 
+  it("Should parse Arthur's inventory from steam-api", async () => {
+    const inv = await readSteamInventory('arthur');
+
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).toString()));
+  }, 30_000);
+
+  it("Should parse Arthur's inventory from tf2-api", async () => {
+    const attribs = await readAttributes('arthur');
+
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
+  }, 30_000);
+  
+  it("Should parse Scrap1's inventory from steam-api", async () => {
+    const inv = await readSteamInventory('scrap1');
+
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).toString()));
+  }, 30_000);
+
+  it("Should parse Scrap1's inventory from tf2-api", async () => {
+    const attribs = await readAttributes('scrap1');
+
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
+  }, 30_000);
   //#script Insert above me
+
 
   afterAll(() => {
     const skipped: string[] = [
@@ -79,7 +103,7 @@ describe('Parse inventories', () => {
   });
 });
 
-type names = 'gibson' | 'oli' | 'frost';
+type names = 'gibson' | 'oli' | 'frost' | 'arthur' | 'scrap1';
 async function readAttributes(name: names) {
   return JSON.parse(await readFile(`${__dirname}/inventories/${name}_attributes.json`, 'utf8')).items;
 }
