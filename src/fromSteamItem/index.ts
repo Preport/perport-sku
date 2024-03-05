@@ -21,7 +21,7 @@ export function fromSteamItem(item: CEconItem, schema: Schema) {
 
   if (!attrs) throw new Error("Couldn't get the sku's attrs");
 
-  const attributes = parseAttributes(attrs);
+  const { attributes, isCrate, checkCrateNum } = parseAttributes(attrs);
 
   const isCosmetic = item.tags.some(
     tag => tag.category === 'Type' && (tag.name === 'Cosmetic' || tag.name === 'Usable Item')
@@ -32,21 +32,15 @@ export function fromSteamItem(item: CEconItem, schema: Schema) {
     normalized: false,
 
     ...attributes,
-    ...parseDescriptions(
-      item,
-      schema,
-      quality,
-      isCosmetic,
-      attributes.crateseries !== undefined,
-      attributes.strangeParts
-    )
+    ...parseDescriptions(item, schema, quality, isCosmetic, isCrate, attributes.strangeParts)
   };
   return new Sku(
     Object.assign(
       beforeItemNameParsed,
       parseItemName(
         item,
-        !!attributes.crateseries,
+        isCrate,
+        checkCrateNum,
         beforeItemNameParsed.quality,
         qualityTag!.name,
         beforeItemNameParsed.killstreak,

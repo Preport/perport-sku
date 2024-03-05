@@ -25,9 +25,12 @@ export async function getItemsGame() {
 
     items[key] = {
       name: attrib.name,
-      static_attrs: attrib?.static_attrs,
-      attributes: attrib?.attributes,
-      tool: attrib?.tool
+      armory_desc: attrib.armory_desc,
+      item_class: attrib.item_class,
+      static_attrs: attrib.static_attrs,
+      attributes: attrib.attributes,
+      prefab: attrib.prefab,
+      tool: attrib.tool
     };
   });
   return { attribs: items };
@@ -36,6 +39,9 @@ export async function getItemsGame() {
 export interface MinifiedAttributes {
   name: string;
   static_attrs?: StaticAttr[] | StaticAttrsClass;
+  item_class?: string;
+  armory_desc?: string;
+  prefab?: string;
   attributes?: Attribute[] | AttributesAttributes;
   tool?: Tool;
 }

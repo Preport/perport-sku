@@ -1,9 +1,11 @@
 import type { MinifiedAttributes } from '../schema/builders/getItemsGame';
 import type { SkuType } from '../skuObject';
 
-export function parseAttributes(
-  attributes: MinifiedAttributes
-): Pick<SkuType, 'crateseries' | 'target' | 'paint' | 'strangeParts'> {
+export function parseAttributes(attributes: MinifiedAttributes): {
+  attributes: Pick<SkuType, 'crateseries' | 'target' | 'paint' | 'strangeParts'>;
+  isCrate: boolean;
+  checkCrateNum: boolean;
+} {
   const static_attrs = attributes.static_attrs;
   const sku: {
     crateseries?: number;
@@ -30,5 +32,13 @@ export function parseAttributes(
     } else break;
   }
 
-  return sku;
+  const isCrate =
+    sku.crateseries !== undefined ||
+    attributes.item_class?.endsWith('_crate') ||
+    attributes.armory_desc?.endsWith('_crate') ||
+    attributes.prefab === 'eventcratebase' ||
+    ((attributes.name.includes('Crate') || attributes.name.includes('Case')) &&
+      attributes.attributes?.['decoded by itemdefindex'] !== undefined);
+
+  return { attributes: sku, isCrate, checkCrateNum: isCrate && sku.crateseries === undefined };
 }

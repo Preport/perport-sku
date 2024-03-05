@@ -6,11 +6,12 @@ const typeRegex = /.* - .*: \d+/;
 export function parseItemName(
   item: CEconItem,
   isCrate: boolean,
+  checkCrateNum: boolean,
   quality: number,
   qualityTag: string,
   killstreak: number | undefined,
   bQuality2: number | undefined
-): Pick<SkuType, 'australium' | 'craftnumber' | 'killstreak' | 'quality2'> {
+): Pick<SkuType, 'australium' | 'craftnumber' | 'killstreak' | 'quality2' | 'crateseries'> {
   const itemName: string =
     item.fraudwarnings
       .find(warning => warning.startsWith('This item has been renamed.'))
@@ -27,12 +28,20 @@ export function parseItemName(
   const quality2 =
     bQuality2 ??
     (quality !== 11 && (item.type.match(typeRegex) || (quality === 15 && qualityTag === 'Strange')) ? 11 : undefined);
-  return {
+  const sku: {
+    australium: boolean;
+    craftnumber?: number;
+    killstreak: number;
+    quality2?: number;
+    crateseries?: number;
+  } = {
     australium: isAustralium(item.market_hash_name),
-    craftnumber: !isCrate ? getCraftNumber(itemName) : undefined,
+    craftnumber: !isCrate ? getCraftNumber(itemName.replace(/Chemistry Set Series #\d+/, '')) : undefined,
     killstreak,
     quality2
   };
+  if (checkCrateNum) sku.crateseries = getCraftNumber(itemName);
+  return sku;
 }
 
 function isAustralium(name: string) {
