@@ -160,7 +160,6 @@ function target(descriptions: Descriptions, schema: Schema) {
     if (!match) continue;
 
     const defindex = schema.upgradables.get(match[1]) ?? schema.itemNames.get(match[1]);
-    if (match[1] == 'Bat') console.log('Bat', defindex);
     if (typeof defindex === 'string')
       throw new Error(`Received string from fabricatorDesc name ${match[1]} was expecting a number`);
     return defindex;
