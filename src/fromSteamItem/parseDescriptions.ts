@@ -192,11 +192,10 @@ function output(descriptions: Descriptions, schema: Schema) {
 
   if (!outputItemName) throw new Error(`Couldn't get the item name from output description: ${descs[0].value}`);
 
-  const validItem = outputItemName.find((v, i) => i !== 0 && v !== null);
+  const validItem = outputItemName.find((v, i) => i !== 0 && v !== undefined);
   if (validItem) {
     // https://steamcommunity.com/profiles/76561197991477148/inventory/#440_2_7029379105
     const defindex = schema.upgradables.get(validItem) ?? schema.itemNames.get(validItem);
-
     returnVal.target = defindex;
   }
 
