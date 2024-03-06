@@ -92,6 +92,18 @@ describe('Parse inventories', () => {
 
     attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
   }, 30_000);
+
+  it("Should parse Wayne's inventory from steam-api", async () => {
+    const inv = await readSteamInventory('wayne');
+
+    inv.map(item => addItem('steam', item.assetid, fromSteamItem(item, schema).toString()));
+  }, 30_000);
+
+  it("Should parse Wayne's inventory from tf2-api", async () => {
+    const attribs = await readAttributes('wayne');
+
+    attribs.map(item => addItem('tf2', item.id, fromAttributes(item, schema).toString()));
+  }, 30_000);
   //#script Insert above me
 
   afterAll(() => {
@@ -114,7 +126,7 @@ describe('Parse inventories', () => {
   });
 });
 
-type names = 'gibson' | 'oli' | 'frost' | 'arthur' | 'scrap1' | 'joekiller';
+type names = 'gibson' | 'oli' | 'frost' | 'arthur' | 'scrap1' | 'joekiller' | 'wayne';
 async function readAttributes(name: names) {
   return JSON.parse(await readFile(`${__dirname}/inventories/${name}_attributes.json`, 'utf8')).items;
 }
