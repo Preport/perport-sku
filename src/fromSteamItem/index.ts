@@ -57,7 +57,8 @@ function getDefindex(item: CEconItem) {
   if (!match) throw new Error("Item doesn't have the defindex link!");
 
   const defindex = +match[1];
-  if (isNaN(defindex)) throw new Error(`Expected a number for defindex received ${match[1]} instead`);
+  // Not necessary to check if defindex is a number
+  //if (isNaN(defindex)) throw new Error(`Expected a number for defindex received ${match[1]} instead`);
 
   return defindex;
 }
