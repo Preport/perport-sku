@@ -11,4 +11,8 @@ describe('getSchemaItems', () => {
     expect(items.get('Bat')).toBe(0);
     await new Promise(resolve => setTimeout(resolve, 7000));
   }, 15000);
+  test('fails to fetch the schema items with a bad api key', async () => {
+    const apiKey = 'bad-api-key';
+    await expect(getSchemaItems(apiKey)).rejects.toThrow('403');
+  });
 });
