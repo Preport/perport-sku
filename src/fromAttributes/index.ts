@@ -73,7 +73,7 @@ function caseSku(sku: SkuType, quality: number, attribs: ItemAttribute[], schema
         sku.festive = true;
         continue;
       case KILLSTREAK_TIER:
-        sku.killstreak = attrib.float_value || 0;
+        sku.killstreak = attrib.float_value!;
         continue;
       case TARGET_DEFINDEX:
         sku.target = attrib.float_value;
@@ -118,7 +118,7 @@ function caseSku(sku: SkuType, quality: number, attribs: ItemAttribute[], schema
         continue;
       case SPELL_COLOR:
       case SPELL_FOOTSTEP:
-        (sku.spells ??= []).push(schema.spells.getSpellLookup(attrib.defindex, attrib.float_value!) || NaN);
+        (sku.spells ??= []).push(schema.spells.getSpellLookup(attrib.defindex, attrib.float_value!)!);
         continue;
       case VOICE_SPELL:
       case PUMPKIN_SPELL:
