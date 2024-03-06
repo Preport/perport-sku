@@ -6,10 +6,10 @@ describe('Sku Class', () => {
 
   test('Test a made up item that has all the attributes', () => {
     const sku = new Sku(
-      '5021;63;u44;australium;uncraftable;w3;pk2023;strange;kt-97;td-71;festive;n3169;c6931;od-24;oq-467;p3188496;sp45,24;pt20,17;sh3161;ks74135'
+      '5021;63;u44;australium;uncraftable;w3;pk2023;strange;kt-97;td-71;festive;n3169;c6931;od-24;oq-467;p3188496;sp24,45;pt17,20;sh3161;ks74135'
     );
     expect(sku.toString()).toBe(
-      '5021;63;u44;australium;uncraftable;w3;pk2023;strange;kt-97;td-71;festive;n3169;c6931;od-24;oq-467;p3188496;sp45,24;pt20,17;sh3161;ks74135'
+      '5021;63;u44;australium;uncraftable;w3;pk2023;strange;kt-97;td-71;festive;n3169;c6931;od-24;oq-467;p3188496;sp24,45;pt17,20;sh3161;ks74135'
     );
 
     expect(sku).toEqual(
@@ -23,6 +23,7 @@ describe('Sku Class', () => {
         paintKit: 2023,
         quality2: 11,
         killstreak: 97,
+        normalized: false,
         target: 71,
         festive: true,
         craftnumber: 3169,
@@ -30,8 +31,8 @@ describe('Sku Class', () => {
         output: 24,
         outputQuality: 467,
         paint: 3188496,
-        spells: [45, 24],
-        strangeParts: [20, 17],
+        spells: [24, 45],
+        strangeParts: [17, 20],
         sheen: 3161,
         killstreaker: 74135
       } as Sku)
