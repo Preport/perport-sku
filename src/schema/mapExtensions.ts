@@ -28,9 +28,6 @@ export class SpellMap extends (Map as new () => TwoWayMap) {
     super.set(spellFullDefindex, defindex);
     return this;
   }
-  getSpell(spellName: string): number | undefined {
-    return super.get(spellName);
-  }
   getSpellLookup(baseDefindex: number, float_value: number): number | undefined {
     return super.get(`${baseDefindex}-${float_value}`);
   }
