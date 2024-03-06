@@ -34,7 +34,7 @@ export class Schema {
   upgradables: Map<string, number> = new Map();
   items: Record<number, MinifiedAttributes> = {};
   readonly defindexMap = new Map<number, number>();
-  readonly normalizedStrangePartMap = new Map<number, number>();
+  //readonly normalizedStrangePartMap = new Map<number, number>();
   constructor(apiKey: string) {
     this.#apiKey = apiKey;
     this.readyProm = this.getSchema();
@@ -131,16 +131,6 @@ export class Schema {
     */
     for (const [id, name] of schemaOverview.parts.entries() as IterableIterator<[number, string]>) {
       this.parts.has(id) && this.parts.set(name, id);
-    }
-
-    const seen: { [partName: string]: number } = {};
-    let first: number;
-    for (const [key, value] of this.parts) {
-      if (typeof key === 'string') continue;
-
-      if ((first = seen[value]) !== undefined) {
-        this.normalizedStrangePartMap.set(key, first);
-      } else seen[value] = key;
     }
 
     //console.log(this.spells);
