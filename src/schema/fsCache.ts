@@ -8,13 +8,14 @@ export class FsCache implements Store<any> {
   public static get() {
     return (this.cacheInstance ??= new FsCache());
   }
-
-  private constructor() {
+  private path = './tmp/caches/';
+  private constructor(path?: string) {
+    if (path) this.path = path;
     this.prom = fs
-      .mkdir('./tmp/caches', { recursive: true })
+      .mkdir(this.path, { recursive: true })
       .then(path => {
         // folder already exists read the directory
-        if (path === undefined) return fs.readdir('./tmp/caches/');
+        if (path === undefined) return fs.readdir(this.path);
         // folder was just created don't read the directory
         return [];
       })
@@ -28,7 +29,7 @@ export class FsCache implements Store<any> {
   }
   clear(): void | Promise<void> {
     this.keys.clear();
-    return fs.rm('./tmp/caches', { recursive: true }).then(d => fs.mkdir('./tmp/caches'));
+    return fs.rm(this.path, { recursive: true }).then(d => fs.mkdir(this.path));
   }
   has?(key: string): boolean | Promise<boolean> {
     return this.keys.has(key);
@@ -59,20 +60,20 @@ export class FsCache implements Store<any> {
     key = this.removeApiKey(key);
     if (!this.keys.has(key)) return;
     const keyEncoded = this.encodeKey(key);
-    return fs.readFile(`./tmp/caches/${keyEncoded}`, 'utf8');
+    return fs.readFile(`${this.path}/${keyEncoded}`, 'utf8');
   }
   async delete(key: string) {
     await this.prom;
     key = this.removeApiKey(key);
     if (!this.keys.has(key)) return false;
     const keyEncoded = this.encodeKey(key);
-    return fs.rm(`./tmp/caches/${keyEncoded}`).then(() => true);
+    return fs.rm(`${this.path}/${keyEncoded}`).then(() => true);
   }
   async set(key: string, value: any, ttl?: number | undefined) {
     await this.prom;
     key = this.removeApiKey(key);
     const keyEncoded = this.encodeKey(key);
-    return fs.writeFile(`./tmp/caches/${keyEncoded}`, value).then(() => {
+    return fs.writeFile(`${this.path}/${keyEncoded}`, value).then(() => {
       this.keys.add(key);
     });
   }
