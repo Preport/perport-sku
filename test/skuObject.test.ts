@@ -55,6 +55,11 @@ describe('Sku Class', () => {
     expect(Sku.compare('5021;6', new Sku('5021;6'))).toBe(true);
     expect(Sku.compare('5021;6;p91567;sp43,21', new Sku('5021;6'))).toBe(false);
     expect(Sku.compare('5021;6;kt-2', new Sku('5021;6;kt-1'))).toBe(false);
+
+    expect(Sku.compare('5021;6;sp3', '5021;6;sp4', false)).toBe(false);
+    expect(Sku.compare('5021;6;sp3,4', '5021;6;sp3,4', false)).toBe(true);
+
+    expect(Sku.compare('5021;6;sp3;sh3', '5021;6;sp4;sh3', false, 'spells')).toBe(true);
   });
 
   test('Weak compare skus', () => {
