@@ -4,6 +4,6 @@ import { getItemsGame } from './getItemsGame';
 describe('getItemsGame', () => {
   it('should fetch items_game.txt', async () => {
     const itemsGame = await getItemsGame();
-    writeFileSync('./items_game.txt', JSON.stringify(itemsGame));
+    writeFileSync('./tmp/items_game.txt', JSON.stringify(itemsGame));
   });
 });
