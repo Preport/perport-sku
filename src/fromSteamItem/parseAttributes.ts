@@ -16,7 +16,7 @@ export function parseAttributes(attributes: MinifiedAttributes): {
     crateseries: +static_attrs?.['set supply crate series'] || undefined
   };
 
-  const target = +attributes.attributes?.['tool target item'] || undefined;
+  const target = +(attributes.attributes?.['tool target item']?.value ?? static_attrs?.['tool target item'] ?? 0);
 
   if (target) sku.target = target;
 
