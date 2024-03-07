@@ -19,6 +19,8 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
       - run: npm ci
       - run: npm test
       - run: npm run build
