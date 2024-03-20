@@ -20,6 +20,10 @@ export async function getSchemaItems(apiKey: string) {
           {
             //cache is broken for this endpoint
             //cache: FsCache.get()
+            retry: {
+              // It is possible to get 404 from this endpoint claiming that it is retired
+              statusCodes: [404, 408, 429, 500, 502, 503, 504, 521, 522, 524]
+            }
           }
         )
         .json()
