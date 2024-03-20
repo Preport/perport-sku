@@ -27,6 +27,8 @@ DEFINDEX;QUALITY(;norm)(;uUNUSUAL)(;australium)(;uncraftable)(;wWEAR)(;pkPAINTKI
 
 Where SPELL and PART are arrays ie ;sp1006,8900;pt38,40
 
+;norm is reserved for future use
+
 ### Example for a long sku that has every attribute would be
 
 5021;63;u44;australium;uncraftable;w3;pk2023;strange;kt-97;td-71;festive;n3169;c6931;od-24;oq-467;p3188496;sp45,24;pt20,17;sh3161;ks74135 (this item doesn't exist irl)
