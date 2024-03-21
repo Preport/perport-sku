@@ -24,8 +24,7 @@ export class FsCache implements Store<any> {
           const keyDecoded = this.decodeKey(key);
           this.keys.add(keyDecoded);
         });
-      })
-      .catch(_err => {});
+      });
   }
   clear(): void | Promise<void> {
     this.keys.clear();

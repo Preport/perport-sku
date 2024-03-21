@@ -34,17 +34,19 @@ describe('FsCache', () => {
 
   it('should remove a cache', async () => {
     await cache.set('testdel', 'test');
-    await cache.delete('testdel');
+    const c = await cache.delete('testdel');
+    expect(c).toBe(true);
   });
 
   it('should fail to remove a cache', async () => {
-    await cache.delete('test31');
+    const c = await cache.delete('testDelFalseTest');
+    expect(c).toBe(false);
   });
 
   it('should throw an error on getMany', () => {
     expect(() => cache.getMany!(['test'])).toThrowError('Method not implemented.');
   });
-  afterAll(() => {
-    cache.clear();
+  afterAll(async () => {
+    await cache.clear();
   });
 });
