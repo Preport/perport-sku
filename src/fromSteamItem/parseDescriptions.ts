@@ -115,7 +115,11 @@ function effect(descriptions: Descriptions, schema: Schema, isCrate: boolean) {
   if (isCrate) return undefined;
   const effectDesc = getDescriptionRest(descriptions, '★ Unusual Effect: ');
   if (!effectDesc) return undefined;
-  return schema.effects.get(effectDesc) ?? undefined;
+
+  // Hardcode Invalid Particle
+  const eff = effectDesc === 'Invalid Particle' ? 0 : schema.effects.get(effectDesc);
+  if (eff === undefined) throw new Error(`Couldn't get the effect defindex of the effect ${effectDesc}`);
+  return eff;
 }
 // KS
 function killstreak(
@@ -142,7 +146,8 @@ function killstreak(
   if (killstreakerStr) {
     killstreaker = schema.killstreakers.get(killstreakerStr);
 
-    if (!killstreaker) throw new Error(`Failed to parse Sheen to Number Received Unknown Sheen ${killstreakerStr}`);
+    if (!killstreaker)
+      throw new Error(`Failed to parse Killstreaker to Number Received Unknown Killstreaker ${killstreakerStr}`);
   }
 
   // Killstreak tier should be parsed from item's name
