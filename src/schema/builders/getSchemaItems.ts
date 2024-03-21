@@ -19,18 +19,18 @@ export async function getSchemaItems(apiKey: string) {
           }`,
           {
             //cache is broken for this endpoint
-            //cache: FsCache.get()
+            //cache: FsCache.get(),
             retry: {
+              limit: 5,
               // It is possible to get 404 from this endpoint claiming that it is retired
-              statusCodes: [404, 408, 429, 500, 502, 503, 504, 521, 522, 524]
+              statusCodes: [404, 408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
             }
           }
         )
-        .json()
-        .catch(err => {
+        .json()) as /*.catch(err => {
           console.log(err, Buffer.from(err.response.body).toString('utf8'), err.response?.isFromCache);
           throw err;
-        })) as GetSchemaItemsResponse
+        })*/ GetSchemaItemsResponse
     ).result;
 
     for (const item of resp.items) {
