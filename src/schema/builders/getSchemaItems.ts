@@ -110,13 +110,19 @@ export async function getSchemaItems(apiKey: string): GetSchemaItemsReturnType {
 }
 
 function JsonMapReplacer(_key: string, value: any) {
+  if (value instanceof SpellMap) {
+    return { __spellmap__: Array.from(value.entries()) };
+  }
   if (value instanceof Map) {
     return { __map__: Array.from(value.entries()) };
   }
   return value;
 }
 function JsonMapReviver(_key: string, value: any) {
-  if (value && value.__map__) {
+  if (value?.__spellmap__) {
+    return new SpellMap(value.__spellmap__);
+  }
+  if (value?.__map__) {
     return new Map(value.__map__);
   }
   return value;

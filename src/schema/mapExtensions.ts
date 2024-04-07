@@ -8,7 +8,7 @@ export interface TwoWayMap extends Map<string | number, string | number> {
   set(key: number, value: string): this;
 }
 
-export class SpellMap extends (Map as new () => TwoWayMap) {
+export class SpellMap extends (Map as new (...params: any[]) => TwoWayMap) {
   setSpell(spellName: string, defindex: number): this {
     // get returning undefined is expected
     super.get(spellName)! < defindex || super.set(spellName, defindex);
