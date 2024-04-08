@@ -35,8 +35,15 @@ export class Schema {
   items: Record<number, MinifiedAttributes> = {};
   readonly defindexMap = new Map<number, number>();
   //readonly normalizedStrangePartMap = new Map<number, number>();
-  constructor(apiKey: string) {
-    this.#apiKey = apiKey;
+  constructor(apiKeyOrSerializedSchema: string) {
+    if (apiKeyOrSerializedSchema.length > 50) {
+      // if length is greater than 50, it's most likely a serialized schema since api keys are 32 characters long
+      this.deserialize(apiKeyOrSerializedSchema);
+      this.#apiKey = '';
+      this.readyProm = Promise.resolve();
+      return;
+    }
+    this.#apiKey = apiKeyOrSerializedSchema;
     this.readyProm = this.getSchema();
   }
 
@@ -134,6 +141,41 @@ export class Schema {
     }
 
     //console.log(this.spells);
+  }
+
+  public serialize(): string {
+    return JSON.stringify({
+      killstreakers: Array.from(this.killstreakers.entries()),
+      sheens: Array.from(this.sheens.entries()),
+      effects: Array.from(this.effects.entries()),
+      paintKits: Array.from(this.paintKits.entries()),
+      rarities: Array.from(this.rarities.entries()),
+      origins: Array.from(this.origins.entries()),
+      qualities: Array.from(this.qualities.entries()),
+      spells: Array.from(this.spells.entries()),
+      cosmeticParts: Array.from(this.cosmeticParts.entries()),
+      parts: Array.from(this.parts.entries()),
+      itemNames: Array.from(this.itemNames.entries()),
+      items: this.items
+      //defindexMap: Array.from(this.defindexMap.entries())
+    });
+  }
+
+  private deserialize(serializedSchema: string): void {
+    const schema = JSON.parse(serializedSchema);
+    this.killstreakers = new Map(schema.killstreakers) as TwoWayMap;
+    this.sheens = new Map(schema.sheens) as TwoWayMap;
+    this.effects = new Map(schema.effects) as TwoWayMap;
+    this.paintKits = new Map(schema.paintKits) as TwoWayMap;
+    this.rarities = new Map(schema.rarities) as TwoWayMap;
+    this.origins = new Map(schema.origins) as TwoWayMap;
+    this.qualities = new Map(schema.qualities) as TwoWayMap;
+    this.spells = new SpellMap(schema.spells);
+    this.cosmeticParts = new Map(schema.cosmeticParts) as TwoWayMap;
+    this.parts = new Map(schema.parts) as TwoWayMap;
+    this.itemNames = new Map(schema.itemNames) as TwoWayMap;
+    this.items = schema.items;
+    //this.defindexMap = new Map(schema.defindexMap);
   }
 }
 
