@@ -20,10 +20,12 @@ export class FsCache implements Store<any> {
         return [];
       })
       .then(fileNames => {
-        fileNames.forEach(key => {
-          const keyDecoded = this.decodeKey(key);
-          this.keys.add(keyDecoded);
-        });
+        fileNames
+          .filter(f => !f.endsWith('.tmp'))
+          .forEach(key => {
+            const keyDecoded = this.decodeKey(key);
+            this.keys.add(keyDecoded);
+          });
       });
   }
   clear(): void | Promise<void> {
@@ -72,8 +74,12 @@ export class FsCache implements Store<any> {
     await this.prom;
     key = this.removeApiKey(key);
     const keyEncoded = this.encodeKey(key);
-    return fs.writeFile(`${this.path}/${keyEncoded}`, value).then(() => {
+    // safeWrite in case of crashes
+    const fileName = `${this.path}/${keyEncoded}`;
+    const tempFileName = `${fileName}.tmp`;
+    await fs.writeFile(tempFileName, value).then(() => {
       this.keys.add(key);
     });
+    return fs.rename(tempFileName, fileName);
   }
 }
