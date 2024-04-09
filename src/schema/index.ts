@@ -255,22 +255,3 @@ export class Schema extends (EventEmitter as new () => TypedEmitter<SchemaEvents
     //this.defindexMap = new Map(schema.defindexMap);
   }
 }
-
-export type FetchAllType = {
-  itemsGame: any;
-  paintKits: any;
-
-  qualities: any;
-  effects: any;
-  origins: any;
-  attributes: {
-    [id: string]: any;
-  };
-  sets: any;
-  levels: any;
-  parts: any;
-  lookups: any;
-
-  itemNames: any;
-  items: any;
-};
