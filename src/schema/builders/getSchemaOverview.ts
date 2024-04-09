@@ -2,13 +2,13 @@ import got from './gotInstance';
 import type { TwoWayMap } from '..';
 
 export async function getSchemaOverview(isLiveUpdate: boolean = false, apiKey: string) {
-  const resp = (
-    (await got
-      .get(`https://api.steampowered.com/IEconItems_440/GetSchemaOverview/v0001?key=${apiKey}&language=English`, {
-        context: { isLiveUpdate }
-      })
-      .json()) as GetSchemaResponse
-  ).result;
+  const res = await got.get(
+    `https://api.steampowered.com/IEconItems_440/GetSchemaOverview/v0001?key=${apiKey}&language=English`,
+    {
+      context: { isLiveUpdate }
+    }
+  );
+  const resp = (JSON.parse(res.body) as GetSchemaResponse).result;
   const qualities = new Map() as TwoWayMap;
 
   for (const key in resp.qualities) {
