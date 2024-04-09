@@ -1,12 +1,13 @@
-import got from 'got';
-import { FsCache } from '../fsCache';
+import got from './gotInstance';
 import vdf from 'vdf-parser';
 
-export async function getItemsGame() {
+export async function getItemsGame(isLiveUpdate: boolean = false) {
   const resp = await got.get(
     'https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/tf/scripts/items/items_game.txt',
     {
-      cache: FsCache.get()
+      context: {
+        isLiveUpdate
+      }
     }
   );
 

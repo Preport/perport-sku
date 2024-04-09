@@ -1,11 +1,10 @@
-import got from 'got';
+import got from './gotInstance';
 import { TwoWayMap } from '..';
-import { FsCache } from '../fsCache';
 
-export async function getPaintKits() {
+export async function getPaintKits(isLiveUpdate: boolean = false) {
   const resp = await got.get(
     'https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/tf/resource/tf_proto_obj_defs_english.txt',
-    { cache: FsCache.get() }
+    { context: { isLiveUpdate } }
   );
 
   const paintKits = new Map() as TwoWayMap;

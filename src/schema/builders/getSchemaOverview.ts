@@ -1,12 +1,11 @@
-import got from 'got';
+import got from './gotInstance';
 import type { TwoWayMap } from '..';
-import { FsCache } from '../fsCache';
 
-export async function getSchemaOverview(apiKey: string) {
+export async function getSchemaOverview(isLiveUpdate: boolean = false, apiKey: string) {
   const resp = (
     (await got
       .get(`https://api.steampowered.com/IEconItems_440/GetSchemaOverview/v0001?key=${apiKey}&language=English`, {
-        cache: FsCache.get()
+        context: { isLiveUpdate }
       })
       .json()) as GetSchemaResponse
   ).result;

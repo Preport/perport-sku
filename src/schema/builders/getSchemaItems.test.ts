@@ -14,6 +14,6 @@ describe('getSchemaItems', () => {
   }, 15000);*/
   test('fails to fetch the schema items with a bad api key', async () => {
     const apiKey = 'bad-api-key';
-    await expect(getSchemaItems(apiKey)).rejects.toThrow('403');
+    await expect(getSchemaItems(undefined, apiKey)).rejects.toThrow('403');
   });
 });

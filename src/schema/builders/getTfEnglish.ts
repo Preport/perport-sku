@@ -1,12 +1,11 @@
-import got from 'got';
+import got from './gotInstance';
 import type { TwoWayMap } from '..';
-import { FsCache } from '../fsCache';
 
-export async function getTfEnglish() {
+export async function getTfEnglish(isLiveUpdate: boolean = false) {
   const resp = await got.get(
     'https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/tf/resource/tf_english.txt',
     {
-      cache: FsCache.get()
+      context: { isLiveUpdate }
     }
   );
 

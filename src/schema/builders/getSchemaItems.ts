@@ -1,4 +1,4 @@
-import got from 'got';
+import got from './gotInstance';
 import { TwoWayMap } from '..';
 import { SpellMap } from '../mapExtensions';
 import fs from 'fs/promises';
@@ -11,7 +11,7 @@ export type GetSchemaItemsReturnType = Promise<{
   upgradables: Map<string, number>;
 }>;
 
-export async function getSchemaItems(apiKey: string): GetSchemaItemsReturnType {
+export async function getSchemaItems(isLiveUpdate: boolean = false, apiKey: string): GetSchemaItemsReturnType {
   const items = new Map() as TwoWayMap;
   const upgradables = new Map<string, number>();
   const spells = new SpellMap();
@@ -30,9 +30,9 @@ export async function getSchemaItems(apiKey: string): GetSchemaItemsReturnType {
       }`,
       {
         //cache is broken for this endpoint
-        //cache: FsCache.get(),
+        cache: false,
         retry: {
-          limit: 5,
+          limit: 3,
           // It is possible to get 404 from this endpoint claiming that it is retired
           statusCodes: [404, 408, 413, 429, 500, 502, 503, 504, 521, 522, 524]
         }
@@ -47,7 +47,11 @@ export async function getSchemaItems(apiKey: string): GetSchemaItemsReturnType {
         const fileAccess = await fs.access('./tmp/schemaItems.json', fs.constants.R_OK).catch(() => false);
 
         if (date === localLastChange && fileAccess !== false) {
-          // read from cache
+          if (isLiveUpdate) {
+            // If live update is requested, throw error to indicate that the cache is up to date
+            throw new Error('Local cache is up to date');
+          }
+          // Else this is the first run so read from cache
           useLocalCache = true;
           break;
         }
