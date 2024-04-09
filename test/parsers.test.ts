@@ -124,6 +124,32 @@ describe('Parse inventories', () => {
     }
     expect(errString).toBe('');
   });
+
+  afterAll(async () => {
+    // Test Schema LiveUpdate
+    schema.liveUpdate = 1;
+    expect(schema.liveUpdate).toBe(1);
+    schema.liveUpdate = 0;
+    expect(schema.liveUpdate).toBe(0);
+    schema.liveUpdate = -1000;
+    expect(schema.liveUpdate).toBe(-1000);
+
+    // Test Schema serialization
+    const serializedSchema = schema.serialize();
+    const schema2 = new Schema(serializedSchema);
+    expect(schema2.serialize()).toBe(serializedSchema);
+
+    const mockHandler = jest.fn();
+    const mockHandler2 = jest.fn();
+
+    schema.on('liveUpdateError', mockHandler);
+    schema2.on('liveUpdate', mockHandler2);
+
+    await schema['LiveUpdateSchema']();
+
+    expect(mockHandler).toBeCalledTimes(1);
+    expect(mockHandler2).toBeCalledTimes(0);
+  });
 });
 
 type names = 'gibson' | 'oli' | 'frost' | 'arthur' | 'scrap1' | 'joekiller' | 'wayne';
