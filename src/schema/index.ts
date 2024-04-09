@@ -1,9 +1,11 @@
 import { getTfEnglish } from './builders/getTfEnglish';
 import { getSchemaItems } from './builders/getSchemaItems';
-import { MinifiedAttributes, UsageAttributes, getItemsGame } from './builders/getItemsGame';
+import { MinifiedAttributes, getItemsGame } from './builders/getItemsGame';
 import { getPaintKits } from './builders/getPaintKits';
-import { getSchemaOverview } from './builders/getSchemaOverview';
+import { ResultAttribute, getSchemaOverview } from './builders/getSchemaOverview';
 import { SpellMap } from './mapExtensions';
+import EventEmitter from 'events';
+import TypedEmitter from 'typed-emitter';
 
 export interface TwoWayMap extends Map<string | number, string | number> {
   get(key: string): number | undefined;
@@ -13,8 +15,28 @@ export interface TwoWayMap extends Map<string | number, string | number> {
   set(key: number, value: string): this;
 }
 
+type LiveUpdateKeys =
+  | 'killstreakers'
+  | 'sheens'
+  | 'effects'
+  | 'paintKits'
+  | 'rarities'
+  | 'origins'
+  | 'qualities'
+  | 'spells'
+  | 'cosmeticParts'
+  | 'parts'
+  | 'itemNames'
+  | 'items'
+  | 'upgradables';
+
+type SchemaEvents = {
+  liveUpdate: (updated: LiveUpdateKeys[]) => void;
+  liveUpdateError: (error: Error) => void;
+};
+
 //TODO: Create a map to normalize parts that have the same name ie 97,87,0
-export class Schema {
+export class Schema extends (EventEmitter as new () => TypedEmitter<SchemaEvents>) {
   readonly readyProm: Promise<any>;
   readonly #apiKey: string;
 
@@ -35,7 +57,30 @@ export class Schema {
   items: Record<number, MinifiedAttributes> = {};
   readonly defindexMap = new Map<number, number>();
   //readonly normalizedStrangePartMap = new Map<number, number>();
+
+  private _liveUpdate = 0;
+  private interval: NodeJS.Timeout | null = null;
+
+  get liveUpdate(): number {
+    return this._liveUpdate;
+  }
+  /**
+   * Value is time in seconds suggested to use 30 minutes-1 hour
+   * Using any value <= 0 will stop live updating
+   */
+  set liveUpdate(value: number) {
+    if (this.interval) clearInterval(this.interval);
+    if (value <= 0) {
+      this.interval = null;
+    } else if (value > 0) {
+      this.interval = setInterval(() => {
+        this.LiveUpdateSchema();
+      }, value * 1000);
+    }
+    this._liveUpdate = value;
+  }
   constructor(apiKeyOrSerializedSchema: string) {
+    super();
     if (apiKeyOrSerializedSchema.length > 50) {
       // if length is greater than 50, it's most likely a serialized schema since api keys are 32 characters long
       this.deserialize(apiKeyOrSerializedSchema);
@@ -47,100 +92,132 @@ export class Schema {
     this.readyProm = this.getSchema();
   }
 
-  private async getSchema() {
-    const [schemaItems, tfEnglish, itemsGame, paintKits, schemaOverview] = await Promise.all([
-      getSchemaItems(this.#apiKey),
-      getTfEnglish(),
-      getItemsGame(),
-      getPaintKits(),
-      getSchemaOverview(this.#apiKey)
+  private async LiveUpdateSchema() {
+    const proms = await Promise.allSettled([
+      getSchemaItems(true, this.#apiKey),
+      getTfEnglish(true),
+      getItemsGame(true),
+      getPaintKits(true),
+      getSchemaOverview(true, this.#apiKey)
     ]);
+    const useCache = [proms[4].status === 'rejected', proms[2].status === 'rejected'] as const;
+    const updates: LiveUpdateKeys[] = [];
+    proms.forEach((prom, i) => {
+      if (prom.status === 'fulfilled') {
+        switch (i) {
+          case 0:
+            this.getSchemaItemsUpdate(prom.value as any, useCache[0], useCache[1]);
+            updates.push('itemNames', 'parts', 'cosmeticParts', 'upgradables', 'spells');
+            break;
+          case 1:
+            this.getTfEnglishUpdate(prom.value as any);
+            updates.push('killstreakers', 'sheens');
+            break;
+          case 2:
+            this.getItemsGameUpdate(prom.value as any);
+            updates.push('items');
+            break;
+          case 3:
+            this.getPaintKitsUpdate(prom.value as any);
+            updates.push('paintKits');
+            break;
+          case 4:
+            this.getSchemaOverviewUpdate(prom.value as any);
+            updates.push('effects', 'origins', 'qualities');
+            break;
+        }
+      }
+    });
+    if (updates.length) this.emit('liveUpdate', updates);
+    else this.emit('liveUpdateError', new Error('No updates'));
+  }
 
-    //spell attrib defindexes from overview
-    Object.entries(schemaOverview.attributes).forEach(([defindex, attrib]) => {
+  private schemaOverviewParts: TwoWayMap = new Map();
+  private schemaOverviewAttribs: Record<number, ResultAttribute> = {};
+  private onSpellsUpdateSchemaOverview() {
+    Object.entries(this.schemaOverviewAttribs).forEach(([defindex, attrib]) => {
       if (attrib.name?.startsWith('SPELL: ')) {
         const descStr = attrib.name.startsWith('SPELL: Halloween') ? attrib.description_string! : attrib.name;
-        schemaItems.spells.setSpell(descStr, +defindex);
+        this.spells.setSpell(descStr, +defindex);
       }
     });
-    //extend spells
-    Object.entries(itemsGame.attribs).forEach(([defindex, attrib]) => {
+  }
+
+  private itemsGameAttribs: Record<number, MinifiedAttributes> = {};
+  private onSpellsUpdateItemGame() {
+    Object.entries(this.itemsGameAttribs).forEach(([defindex, attrib]) => {
       if (attrib.name?.startsWith('Halloween Spell: ')) {
         const spellName = attrib.name.slice(17);
-        schemaItems.spells.setSpell(spellName, +defindex);
-        const usageAttribs = attrib.tool?.usage?.attributes as UsageAttributes;
+        this.spells.setSpell(spellName, +defindex);
+        const usageAttribs = attrib.tool?.usage?.attributes;
         if (!usageAttribs) return;
-        schemaItems.spells.setSpellLookup(+defindex, usageAttribs);
+        this.spells.setSpellLookup(+defindex, usageAttribs);
       }
     });
+  }
 
-    //schemaItems
+  private onPartsUpdate() {
+    for (const [id, name] of this.schemaOverviewParts.entries() as IterableIterator<[number, string]>) {
+      this.parts.has(id) && this.parts.set(name, id);
+    }
+  }
+
+  private getSchemaItemsUpdate(
+    schemaItems: Awaited<ReturnType<typeof getSchemaItems>>,
+    useSchemaOverviewCache: boolean,
+    useItemsGameCache: boolean
+  ) {
     this.itemNames = schemaItems.items;
     this.parts = schemaItems.parts;
     this.cosmeticParts = schemaItems.cosmeticParts;
     this.upgradables = schemaItems.upgradables;
-    //tfEnglish
+    this.spells = schemaItems.spells;
+    // Also update overviewParts
+    if (useSchemaOverviewCache) {
+      this.onPartsUpdate();
+      this.onSpellsUpdateSchemaOverview();
+    }
+    if (useItemsGameCache) this.onSpellsUpdateItemGame();
+  }
+
+  private getTfEnglishUpdate(tfEnglish: Awaited<ReturnType<typeof getTfEnglish>>) {
     this.killstreakers = tfEnglish.killstreakers;
     this.sheens = tfEnglish.sheens;
-    //itemsGame
+  }
+
+  private getItemsGameUpdate(itemsGame: Awaited<ReturnType<typeof getItemsGame>>) {
     this.items = itemsGame.attribs;
-    //paintKits from proto_obj_defs_english.txt
+    this.itemsGameAttribs = itemsGame.attribs;
+    this.onSpellsUpdateItemGame();
+  }
+
+  private getPaintKitsUpdate(paintKits: Awaited<ReturnType<typeof getPaintKits>>) {
     this.paintKits = paintKits;
-    //schemaOverview
+  }
+  private getSchemaOverviewUpdate(schemaOverview: Awaited<ReturnType<typeof getSchemaOverview>>) {
     this.effects = schemaOverview.effects;
+    this.origins = schemaOverview.origins;
     this.qualities = schemaOverview.qualities;
-    this.spells = schemaItems.spells;
 
-    /*
-    const [fetchall, tfEng] = await Promise.all([fetchAll(this.#apiKey) as FetchAllType, getTfEnglish()]);
-    this.killstreakers = tfEng.killstreakers;
-    this.sheens = tfEng.sheens;
+    this.schemaOverviewAttribs = schemaOverview.attributes;
+    this.schemaOverviewParts = schemaOverview.parts;
+    this.onPartsUpdate();
+    this.onSpellsUpdateSchemaOverview();
+  }
+  private async getSchema() {
+    const [schemaItems, tfEnglish, itemsGame, paintKits, schemaOverview] = await Promise.all([
+      getSchemaItems(undefined, this.#apiKey),
+      getTfEnglish(),
+      getItemsGame(),
+      getPaintKits(),
+      getSchemaOverview(undefined, this.#apiKey)
+    ]);
 
-    (Object.keys(fetchall) as (keyof FetchAllType)[]).forEach(key => {
-      if (key === 'attributes' || key === 'sets' || key === 'levels' || key === 'lookups' || key === 'items') return;
-      this[key] = fetchall[key];
-    });
-
-    for (const key in fetchall.attributes) {
-      const attrib = fetchall.attributes[key];
-      if (attrib.name?.startsWith('SPELL: ')) {
-        const descStr = attrib.name.startsWith('SPELL: Halloween') ? attrib.description_string : attrib.name;
-        this.spells[descStr] = +key;
-        this.spells[key] = descStr;
-      }
-    }
-
-    if (this.itemNames) {
-      for (const id in this.itemNames) {
-        let name = this.itemNames![id];
-        if (this.itemNames![name]) {
-          this.defindexMap.set(+id, +this.itemNames![name]);
-        } else this.itemNames![name] = id;
-
-        if (typeof name === 'string' && name.startsWith('Halloween Spell: ')) {
-          const str = name.slice(17);
-          this.spells[str] ??= +id;
-          this.spells[id] ??= str;
-          const attribs = this.itemsGame.items[id].tool.usage.attributes;
-
-          if (!attribs) continue;
-          const firstAttribKey = Object.keys(attribs)[0];
-          const float_val = attribs[firstAttribKey];
-
-          const attribBase = this.spells[firstAttribKey];
-          if (attribBase === undefined) continue;
-          const spellFullDefindex = `${attribBase}-${float_val}`;
-          this.spells[spellFullDefindex] = id;
-          this.spells[`reverse-${id}`] = spellFullDefindex;
-        }
-      }
-    }
-    */
-    for (const [id, name] of schemaOverview.parts.entries() as IterableIterator<[number, string]>) {
-      this.parts.has(id) && this.parts.set(name, id);
-    }
-
-    //console.log(this.spells);
+    this.getSchemaItemsUpdate(schemaItems, false, false);
+    this.getSchemaOverviewUpdate(schemaOverview);
+    this.getTfEnglishUpdate(tfEnglish);
+    this.getItemsGameUpdate(itemsGame);
+    this.getPaintKitsUpdate(paintKits);
   }
 
   public serialize(): string {
