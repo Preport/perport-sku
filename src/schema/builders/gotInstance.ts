@@ -6,12 +6,10 @@ const gotInstance = got.extend({
   handlers: [
     //@ts-expect-error
     (options, next) => {
-      if (options.isStream) return next(options);
-
       if (options.context.isLiveUpdate) {
         return (async () => {
           const response = (await next(options)) as Response;
-          if (response.statusCode === NOT_MODIFIED) {
+          if (response.statusCode === NOT_MODIFIED || response.isFromCache) {
             const err = new got.HTTPError(response);
             err.name = 'LiveUpdateNotModifiedError';
             throw err;
