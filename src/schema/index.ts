@@ -233,6 +233,7 @@ export class Schema extends (EventEmitter as new () => TypedEmitter<SchemaEvents
       cosmeticParts: Array.from(this.cosmeticParts.entries()),
       parts: Array.from(this.parts.entries()),
       itemNames: Array.from(this.itemNames.entries()),
+      upgradables: Array.from(this.upgradables.entries()),
       items: this.items
       //defindexMap: Array.from(this.defindexMap.entries())
     });
@@ -251,6 +252,7 @@ export class Schema extends (EventEmitter as new () => TypedEmitter<SchemaEvents
     this.cosmeticParts = new Map(schema.cosmeticParts) as TwoWayMap;
     this.parts = new Map(schema.parts) as TwoWayMap;
     this.itemNames = new Map(schema.itemNames) as TwoWayMap;
+    this.upgradables = new Map(schema.upgradables);
     this.items = schema.items;
     //this.defindexMap = new Map(schema.defindexMap);
   }

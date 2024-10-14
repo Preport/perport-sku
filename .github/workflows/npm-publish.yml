@@ -5,6 +5,7 @@ name: Npm Publish
 
 on:
   push:
+    tags: ['v*.*.*']
     branches: ['main']
     paths:
       - 'package.json'
