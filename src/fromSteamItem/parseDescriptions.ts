@@ -117,7 +117,7 @@ function effect(descriptions: Descriptions, schema: Schema, isCrate: boolean) {
   if (!effectDesc) return undefined;
 
   // Hardcode Invalid Particle
-  const eff = effectDesc === 'Invalid Particle' ? 0 : schema.effects.get(effectDesc);
+  const eff = effectDesc === 'Invalid Particle' ? 0 : schema.effects.get(effectDesc.toLowerCase());
   if (eff === undefined) throw new Error(`Couldn't get the effect defindex of the effect ${effectDesc}`);
   return eff;
 }
@@ -158,15 +158,15 @@ function killstreak(
   };
 }
 
-const targetRegex = /^This .+ can be applied to a (.+?)\./;
+const targetRegex = /^This .+ can be applied to a (?:(.+?)\.  |(.+)\.)/;
 function target(descriptions: Descriptions, schema: Schema) {
   for (const desc of descriptions) {
     const match = desc.value.match(targetRegex);
     if (!match) continue;
-
-    const defindex = schema.upgradables.get(match[1]) ?? schema.itemNames.get(match[1]);
+    const name = match[1] || match[2];
+    const defindex = schema.upgradables.get(name) ?? schema.itemNames.get(name);
     if (typeof defindex === 'string')
-      throw new Error(`Received string from fabricatorDesc name ${match[1]} was expecting a number`);
+      throw new Error(`Received string from fabricatorDesc name ${name} was expecting a number`);
     return defindex;
   }
 }

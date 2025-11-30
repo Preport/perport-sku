@@ -26,6 +26,9 @@ export async function getSchemaOverview(isLiveUpdate: boolean = false, apiKey: s
   for (const particle of resp.attribute_controlled_attached_particles) {
     effects.set(particle.id, particle.name);
     !effects.has(particle.name) && effects.set(particle.name, particle.id);
+    // Lowercase version for steam
+    const lowerCase = particle.name.toLowerCase();
+    !effects.has(lowerCase) && effects.set(lowerCase, particle.id);
   }
 
   const origins = new Map() as TwoWayMap;

@@ -108,7 +108,9 @@ describe('Parse inventories', () => {
 
   afterAll(() => {
     const skipped: string[] = [
-      '13271895045' // has 2 invis parts on tf2 attribs and none on steam
+      '13271895045', // has 2 invis parts on tf2 attribs and none on steam
+      '15209372419', // high craft item with custom name tag
+      '13697214568' // has 1 invis part
     ];
     let errString = '';
     for (const assetid in items) {
