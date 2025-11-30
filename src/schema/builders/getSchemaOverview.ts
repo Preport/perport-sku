@@ -31,8 +31,8 @@ export async function getSchemaOverview(isLiveUpdate: boolean = false, apiKey: s
   const origins = new Map() as TwoWayMap;
 
   for (const origin of resp.originNames) {
-    qualities.set(origin.origin, origin.name);
-    qualities.set(origin.name, origin.origin);
+    origins.set(origin.origin, origin.name);
+    origins.set(origin.name, origin.origin);
   }
 
   const attributes: { [defindex: number]: ResultAttribute } = {};
