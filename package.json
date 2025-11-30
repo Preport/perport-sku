@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "inventory": "ts-node ./scripts/fetchInventory.ts"
+    "inventory": "ts-node ./scripts/fetchInventory.ts",
+    "reload": "ts-node ./scripts/updateInventories.ts"
   },
   "type": "commonjs",
   "author": "perport",
